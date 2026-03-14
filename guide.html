@@ -6,9 +6,12 @@
 <title>How to Use These Tools — FML Negotiations</title>
 <style>
 :root{--teal:#0d9488;--dark:#1a1a2e;--gray:#6b7280;--light:#f8fafc;--border:#e2e8f0;--green:#059669;--red:#dc2626;--amber:#d97706;
---m1:#3b82f6;--m2:#10b981;--m3:#f59e0b;--current:#8b5cf6}
+--m1:#3b82f6;--m2:#10b981;--m3:#f59e0b;--current:#8b5cf6;--bg:#f0f2f5;--card:#fff;--text:#374151;--card-shadow:rgba(0,0,0,.06);--hover:#f8fafc;--table-border:#f1f5f9;--tip-bg:#ecfdf5;--tip-border:#059669;--tip-text:#065f46;--tip-strong:#065f46;--callout-bg:#fef3c7;--callout-border:#f59e0b;--callout-strong:#92400e}
+@media(prefers-color-scheme:dark){
+:root{--dark:#e2e8f0;--gray:#9ca3af;--light:#1e1e30;--border:#2d2d44;--bg:#0f0f1a;--card:#1a1a2e;--text:#9ca3af;--card-shadow:rgba(0,0,0,.3);--hover:#252540;--table-border:#2d2d44;--tip-bg:#1a1a2e;--tip-border:#134e4a;--tip-text:#99f6e4;--tip-strong:#5eead4;--callout-bg:#1a1a2e;--callout-border:#92400e;--callout-strong:#fbbf24}
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:var(--dark)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--dark)}
 
 .topnav{background:#1a1a2e;padding:12px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
 .topnav a{color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;transition:all .15s}
@@ -17,13 +20,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .topnav .logo{color:#fff;font-weight:800;font-size:15px;letter-spacing:-0.5px;margin-right:auto}
 
 .hero{background:linear-gradient(135deg,#134e4a 0%,#0d9488 100%);color:#fff;padding:36px 20px 56px;text-align:center;position:relative;overflow:hidden}
-.hero::after{content:'';position:absolute;bottom:-40px;left:0;right:0;height:80px;background:#f0f2f5;border-radius:50% 50% 0 0/100% 100% 0 0;transform:scaleX(1.5)}
+.hero::after{content:'';position:absolute;bottom:-40px;left:0;right:0;height:80px;background:var(--bg);border-radius:50% 50% 0 0/100% 100% 0 0;transform:scaleX(1.5)}
 .hero h1{font-size:24px;font-weight:800;margin-bottom:4px}
 .hero .sub{font-size:14px;opacity:0.9;max-width:700px;margin:0 auto}
 
 .container{max-width:900px;margin:-20px auto 0;padding:0 20px 60px;position:relative;z-index:1}
 
-.section{background:#fff;border-radius:12px;padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:20px}
+.section{background:var(--card);border-radius:12px;padding:24px 28px;box-shadow:0 1px 4px var(--card-shadow);margin-bottom:20px}
 .section h2{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
 .section h2 .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
 .section h2 .chevron{font-size:14px;margin-left:auto;transition:transform .2s;color:var(--gray)}
@@ -31,27 +34,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .section.collapsed h2 .chevron{transform:rotate(-90deg)}
 
 .section-body{margin-top:4px}
-.section-body p{font-size:13px;line-height:1.7;color:#374151;margin-bottom:12px}
+.section-body p{font-size:13px;line-height:1.7;color:var(--text);margin-bottom:12px}
 .section-body p:last-child{margin-bottom:0}
 
 /* Page cards */
 .page-map{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
-.page-card{border:2px solid var(--border);border-radius:10px;padding:16px;transition:all .2s;text-decoration:none;color:inherit;display:block}
+.page-card{border:2px solid var(--border);border-radius:10px;padding:16px;transition:all .2s;text-decoration:none;color:inherit;display:block;background:var(--card)}
 .page-card:hover{border-color:var(--teal);box-shadow:0 4px 12px rgba(13,148,136,.12);transform:translateY(-1px)}
 .page-card .step{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .page-card h3{font-size:14px;font-weight:700;margin-bottom:4px}
 .page-card .page-desc{font-size:12px;color:var(--gray);line-height:1.5}
 .page-card .page-answers{font-size:11px;color:var(--green);font-weight:600;margin-top:8px}
-.page-card.highlight{border-color:var(--teal);background:#f0fdfa}
+.page-card.highlight{border-color:var(--teal);background:var(--tip-bg)}
 
 /* Concept blocks */
-.concept{border-left:3px solid var(--teal);padding:10px 14px;margin:10px 0;background:#f8fafc;border-radius:0 8px 8px 0}
+.concept{border-left:3px solid var(--teal);padding:10px 14px;margin:10px 0;background:var(--light);border-radius:0 8px 8px 0}
 .concept h4{font-size:13px;font-weight:700;margin-bottom:2px}
-.concept p{font-size:12px;color:#374151;margin-bottom:0;line-height:1.6}
+.concept p{font-size:12px;color:var(--text);margin-bottom:0;line-height:1.6}
 
 /* Glossary */
 .glossary{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px}
-.gloss-item{font-size:12px;padding:6px 0;border-bottom:1px solid #f1f5f9}
+.gloss-item{font-size:12px;padding:6px 0;border-bottom:1px solid var(--table-border)}
 .gloss-item strong{color:var(--dark)}
 .gloss-item span{color:var(--gray)}
 
@@ -64,18 +67,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* Toggle explainer */
 .toggle-demo{display:flex;gap:8px;margin:10px 0;justify-content:center}
-.demo-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:2px solid var(--border);background:#fff;color:var(--gray)}
+.demo-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:2px solid var(--border);background:var(--card);color:var(--gray)}
 .demo-btn.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 
 /* Two-column concept */
 .two-concepts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
 /* Callout */
-.callout{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:12px;line-height:1.6}
-.callout strong{color:#92400e}
+.callout{background:var(--callout-bg);border:1px solid var(--callout-border);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:12px;line-height:1.6;color:var(--text)}
+.callout strong{color:var(--callout-strong)}
 
-.tip{background:#ecfdf5;border:1px solid #059669;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:12px;line-height:1.6}
-.tip strong{color:#065f46}
+.tip{background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:12px;line-height:1.6;color:var(--tip-text)}
+.tip strong{color:var(--tip-strong)}
 
 @media(max-width:700px){
   .page-map,.glossary,.two-concepts{grid-template-columns:1fr}
@@ -104,7 +107,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 1: Big Picture -->
 <div class="section" id="s1">
-  <h2 onclick="toggle('s1')">What Is All This? <span class="badge" style="background:#dbeafe;color:#1e40af">Start Here</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s1')">What Is All This? <span class="badge" style="background:var(--light);color:#3b82f6">Start Here</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <p>Final Mile Logistics, Inc (FML) is a FedEx Ground ISP (Independent Service Provider). FML gets paid by FedEx to deliver packages under a contract that defines the rates per stop, per package, per week, etc.</p>
     <p>Contracts don't last forever &mdash; they expire and get renegotiated. <strong>These tools exist to help you make the best decision on your next contract</strong> by comparing the options FedEx has offered using your actual operating data, not just FedEx's estimates.</p>
@@ -121,7 +124,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 2: Page Map -->
 <div class="section" id="s2">
-  <h2 onclick="toggle('s2')">Which Page Do I Use? <span class="badge" style="background:#d1fae5;color:#065f46">Page Guide</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s2')">Which Page Do I Use? <span class="badge" style="background:var(--light);color:#10b981">Page Guide</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <p>There are 5 pages plus this guide. Each one answers a different question. Here's the map:</p>
 
@@ -163,7 +166,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 3: Recommended Workflow -->
 <div class="section" id="s3">
-  <h2 onclick="toggle('s3')">Recommended Workflow <span class="badge" style="background:#fef3c7;color:#92400e">Step by Step</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s3')">Recommended Workflow <span class="badge" style="background:var(--light);color:#f59e0b">Step by Step</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <p>If you're starting from scratch, follow this order:</p>
 
@@ -210,7 +213,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 4: Understanding the Analyzer -->
 <div class="section" id="s4">
-  <h2 onclick="toggle('s4')">Understanding the Analyzer Sections <span class="badge" style="background:#ede9fe;color:#5b21b6">Deep Dive</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s4')">Understanding the Analyzer Sections <span class="badge" style="background:var(--light);color:#8b5cf6">Deep Dive</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <p>The <a href="analyzer.html" style="color:#0d9488">C8892366 Analyzer</a> has 6 sections. Here's what each one does and why it matters:</p>
 
@@ -248,7 +251,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 5: 52-week vs 110-week -->
 <div class="section" id="s5">
-  <h2 onclick="toggle('s5')">52-Week vs 110-Week View <span class="badge" style="background:#fce7f3;color:#9d174d">Important</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s5')">52-Week vs 110-Week View <span class="badge" style="background:var(--light);color:#ec4899">Important</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <p>The analyzer has a toggle at the top that switches between two views:</p>
 
@@ -276,7 +279,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 6: Key Concepts -->
 <div class="section" id="s6">
-  <h2 onclick="toggle('s6')">Key Concepts <span class="badge" style="background:#dbeafe;color:#1e40af">Terminology</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s6')">Key Concepts <span class="badge" style="background:var(--light);color:#3b82f6">Terminology</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <div class="concept">
       <h4>What is a MESO?</h4>
@@ -312,7 +315,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 7: Glossary -->
 <div class="section" id="s7">
-  <h2 onclick="toggle('s7')">Rate Glossary <span class="badge" style="background:#f1f5f9;color:var(--gray)">Quick Reference</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s7')">Rate Glossary <span class="badge" style="background:var(--light);color:var(--gray)">Quick Reference</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <p>Every rate component in your FedEx contract, explained in plain English:</p>
     <div class="glossary">
@@ -336,7 +339,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- SECTION 8: Tips -->
 <div class="section" id="s8">
-  <h2 onclick="toggle('s8')">Negotiation Tips <span class="badge" style="background:#ecfdf5;color:#065f46">Strategy</span> <span class="chevron">&#9660;</span></h2>
+  <h2 onclick="toggle('s8')">Negotiation Tips <span class="badge" style="background:var(--tip-bg);color:var(--tip-strong)">Strategy</span> <span class="chevron">&#9660;</span></h2>
   <div class="section-body">
     <div class="tip">
       <strong>Compare apples to apples.</strong> Always use the same volume assumption when comparing MESOs. Toggle all cards to "My Actual Volume" &mdash; FedEx's projection is designed to make their offers look balanced, not to show you which one is actually best for your operation.

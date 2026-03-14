@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C8882360 Negotiation Performance</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<style>
+:root{--teal:#0d9488;--purple:#7c3aed;--green:#059669;--orange:#d97706;--red:#dc2626;--dark:#1a1a2e;--gray:#6b7280;--light:#f8fafc;--border:#e2e8f0;--meso1:#3b82f6;--actual:#059669;--fa:#8b5cf6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:var(--dark)}
+.dash{max-width:1400px;margin:0 auto;padding:20px}
+header{margin-bottom:24px}
+header h1{font-size:22px;font-weight:700}
+header .sub{font-size:12px;color:var(--gray);margin-top:2px}
+.back-link{font-size:13px;color:var(--teal);text-decoration:none;display:inline-block;margin-bottom:12px}
+.back-link:hover{text-decoration:underline}
+
+.toggle-row{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.toggle-btn{padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray);transition:all .2s}
+.toggle-btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.toggle-btn:hover:not(.active){background:#f1f5f9}
+.toggle-hint{font-size:11px;color:var(--gray);font-style:italic}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);position:relative}
+.kpi .lbl{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.kpi .val{font-size:22px;font-weight:700;margin:4px 0}
+.kpi .chg{font-size:12px;font-weight:600}
+.kpi .up{color:var(--green)}.kpi .down{color:var(--red)}.kpi .flat{color:var(--gray)}
+.kpi .tip{display:none;position:absolute;top:100%;left:0;right:0;z-index:10;background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,.12);font-size:12px;line-height:1.6}
+.kpi:hover .tip{display:block}
+.kpi .tip h4{font-size:12px;margin-bottom:6px;color:var(--dark)}
+.kpi .tip .tip-row{display:flex;justify-content:space-between;gap:8px}
+.kpi .tip .tip-label{color:var(--gray)}.kpi .tip .tip-val{font-weight:600;font-variant-numeric:tabular-nums}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--dark)}
+.card canvas{max-height:340px}
+.card-full{grid-column:1/-1}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0;font-size:12px}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8fafc;padding:8px 6px;text-align:left;font-weight:600;border-bottom:2px solid var(--border);color:var(--gray);font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+td{padding:7px 6px;border-bottom:1px solid #f1f5f9}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+tr:hover{background:#f8fafc}
+.highlight{font-weight:700}
+.positive{color:var(--green)}.negative{color:var(--red)}
+.best-cell{background:#ecfdf5;font-weight:700}
+.worst-cell{background:#fef2f2}
+
+.rate-table{margin-bottom:16px}
+.rate-table th{text-align:right}
+.rate-table th:first-child{text-align:left}
+.rate-table td{text-align:right}
+.rate-table td:first-child{text-align:left;font-weight:600}
+
+.insight-box{background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:16px;margin-bottom:16px;font-size:13px;line-height:1.7;color:#0f766e}
+.insight-box strong{color:#134e4a}
+
+@media(max-width:900px){
+  .grid-2{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .dash{padding:12px}
+}
+</style>
+</head>
+<body>
+<div class="dash">
+<nav class="topnav" style="background:#1a1a2e;padding:12px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
+  <span style="color:#fff;font-weight:800;font-size:15px;letter-spacing:-0.5px;margin-right:auto">FML Negotiations</span>
+  <a href="https://fml-dashboard.vercel.app/dashboard.html" style="color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px">Ops Dashboard</a>
+  <a href="guide.html" style="color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px">Guide</a>
+  <a href="index.html" style="color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px">MESO Overview</a>
+  <a href="performance.html" style="color:#fff;text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;background:#0d9488">C8882360 Performance</a>
+  <a href="analyzer.html" style="color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px">C8892366 Analyzer</a>
+  <a href="cheatsheet.html" style="color:#94a3b8;text-decoration:none;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px">Cheat Sheet</a>
+</nav>
+<header>
+  <h1>C8882360 Negotiation Performance</h1>
+  <div class="sub">What the negotiation was worth: Actual settlement vs what the original MESO offer would have paid &middot; <span id="dateRange"></span></div>
+</header>
+
+<div class="toggle-row">
+  <button class="toggle-btn active" onclick="setView('actual')">49 Weeks (Actual Data)</button>
+  <button class="toggle-btn" onclick="setView('annual')">52 Weeks (Annualized)</button>
+  <span class="toggle-hint" id="toggleHint"></span>
+</div>
+
+<div id="insightBox" class="insight-box"></div>
+<div id="kpiRow" class="kpi-row"></div>
+
+<!-- Rate Comparison Table -->
+<div class="card card-full" style="margin-bottom:16px">
+  <h3>Rate Comparison: Final Approval vs Original MESO Offer (Neg Req 1000045949 &rarr; C8882360)</h3>
+  <div style="overflow-x:auto">
+    <table class="rate-table" id="rateTable"></table>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card card-full">
+    <h3>Weekly Revenue: Actual vs What MESO 1 Would Have Paid</h3>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--actual)"></div> Actual (Final Approval Rates)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--meso1)"></div> Old MESO 1 Projected</div>
+    </div>
+    <canvas id="cTimeline"></canvas>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Cumulative Savings vs MESO 1</h3>
+    <canvas id="cCumulative"></canvas>
+  </div>
+  <div class="card">
+    <h3>Total Savings vs MESO 1</h3>
+    <canvas id="cSavingsBar"></canvas>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Revenue by Component (Avg/Week)</h3>
+    <canvas id="cComponents"></canvas>
+  </div>
+  <div class="card">
+    <h3>Per-Rate Advantage: Final Approval vs MESO 1</h3>
+    <canvas id="cRateAdv"></canvas>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card card-full">
+    <h3>Weekly Savings vs Old MESO 1</h3>
+    <canvas id="cWeeklySavings"></canvas>
+  </div>
+</div>
+
+<div class="card card-full" style="margin-bottom:16px">
+  <h3 id="tableTitle">Week-by-Week Comparison</h3>
+  <div style="overflow-x:auto">
+    <table id="weeklyTable">
+      <thead>
+        <tr>
+          <th>Week Ending</th>
+          <th style="text-align:right">Actual Net</th>
+          <th style="text-align:right">Old MESO 1</th>
+          <th style="text-align:right">vs MESO 1</th>
+        </tr>
+      </thead>
+      <tbody id="weeklyBody"></tbody>
+      <tfoot id="weeklyFoot"></tfoot>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* -- Formatting helpers -- */
+const fm=v=>'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmd=v=>(v>=0?'+':'-')+fm(v);
+const fmr=v=>'$'+v.toFixed(2);
+
+/* -- Old C8882360 Negotiation Rates (Neg Req 1000045949) --
+   These are the MESO offers FedEx originally presented for the C8882360 contract.
+   The negotiation resulted in the Final Approval rates instead.
+   MESO 2 had identical rates to Final Approval, so only MESO 1 is a meaningful comparison. */
+
+const FA_RATES={service:8755,stop:2.21,fuel:0.20,package:0.18,lp_mix:1.00,ecom_stop:1.66,ecom_pkg:0.18,apparel:150,vehicle:40,vehicles:12};
+const OLD_MESO1={service:7140,stop:2.73,fuel:0.15,package:0.18,lp_mix:1.00,ecom_stop:1.64,ecom_pkg:0.18,apparel:150,vehicle:40,vehicles:12};
+
+/* -- Project a week's volume through any rate set -- */
+function projectWeek(w,rates){
+  const nonEcomStops=w.ts-(w.es||0);
+  const nonEcomPkgs=(w.pp||0)+(w.dp||0);
+  const ecomStops=w.es||0;
+  const ecomPkgs=w.ep||0;
+  const totalPkgs=nonEcomPkgs+ecomPkgs;
+  const lpPct=(w.desig||0)/100;
+  const lpPkgs=totalPkgs*lpPct;
+
+  const svc=rates.service;
+  const stopRev=nonEcomStops*rates.stop;
+  const fuelRev=w.ts*rates.fuel;
+  const pkgRev=nonEcomPkgs*rates.package;
+  const lpRev=lpPkgs*rates.lp_mix;
+  const ecomStopRev=ecomStops*rates.ecom_stop;
+  const ecomPkgRev=ecomPkgs*rates.ecom_pkg;
+  const apparel=rates.apparel;
+  const vehicleRev=rates.vehicle*rates.vehicles;
+
+  return {
+    total:svc+stopRev+fuelRev+pkgRev+lpRev+ecomStopRev+ecomPkgRev+apparel+vehicleRev,
+    svc, stopRev, fuelRev, pkgRev, lpRev, ecomStopRev, ecomPkgRev, apparel, vehicleRev
+  };
+}
+
+/* -- State -- */
+let OPS=[], charts={}, viewMode='actual';
+
+function setView(mode){
+  viewMode=mode;
+  document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.toggle-btn[onclick="setView('${mode}')"]`).classList.add('active');
+  render();
+}
+
+/* -- Init -- */
+async function init(){
+  const r=await fetch('https://fml-dashboard.vercel.app/data.json');
+  const json=await r.json();
+  OPS=json.weeks||json;
+  render();
+}
+
+function render(){
+  /* -- Build week-by-week comparison -- */
+  const weeks=OPS.map(w=>{
+    const m1=projectWeek(w,OLD_MESO1);
+    return {we:w.we, actual:w.net, meso1:m1.total, m1_detail:m1, raw:w};
+  });
+  const n=weeks.length;
+
+  /* -- Seasonality-normalized annualization --
+     Data covers 49 weeks (Apr 2025 - Mar 2026). For 52-week view, we estimate
+     3 missing weeks using averages from adjacent non-peak months (Jan, Feb, Apr)
+     rather than a naive 52/49 multiplier, because Nov-Dec peak season would skew results. */
+  let displayWeeks=weeks;
+  let estWeeks=0;
+  let estActual=0, estM1=0;
+
+  if(viewMode==='annual'){
+    const adjMonths=weeks.filter(w=>{
+      const m=parseInt(w.we.split('/')[0]);
+      return m===1||m===2||m===4;
+    });
+    if(adjMonths.length>0){
+      estWeeks=3;
+      estActual=adjMonths.reduce((s,w)=>s+w.actual,0)/adjMonths.length;
+      estM1=adjMonths.reduce((s,w)=>s+w.meso1,0)/adjMonths.length;
+    }
+  }
+
+  const totalN=n+estWeeks;
+  const totalActual=weeks.reduce((s,w)=>s+w.actual,0)+estActual*estWeeks;
+  const totalM1=weeks.reduce((s,w)=>s+w.meso1,0)+estM1*estWeeks;
+  const avgActual=totalActual/totalN;
+  const avgM1=totalM1/totalN;
+
+  const diffM1=totalActual-totalM1;
+  const pctM1=((diffM1/totalM1)*100).toFixed(1);
+
+  const weeksWinM1=weeks.filter(w=>w.actual>w.meso1).length;
+
+  /* -- Header -- */
+  const suffix=viewMode==='annual'?' (includes 3 estimated weeks)':'';
+  document.getElementById('dateRange').textContent=weeks[0].we+' \u2014 '+weeks[n-1].we+' ('+n+' weeks actual'+suffix+')';
+  document.getElementById('toggleHint').textContent=viewMode==='annual'
+    ?'3 estimated weeks based on Jan+Feb+Apr averages (non-peak normalization)'
+    :'Toggle to see seasonality-normalized 52-week annualized figures';
+
+  /* -- Insight Box -- */
+  document.getElementById('insightBox').innerHTML=
+    `<strong>Negotiation Value:</strong> Over ${totalN} weeks${viewMode==='annual'?' (annualized)':''}, the Final Approval rates generated <strong>${fm(totalActual)}</strong> in net settlement \u2014 `+
+    `<strong>${fm(diffM1)} more</strong> than Old MESO 1 would have paid (${fm(totalM1)}). `+
+    `The negotiated rates outperformed Old MESO 1 in <strong>${weeksWinM1} of ${n}</strong> actual weeks. `+
+    `Average weekly advantage: <strong>${fmd(diffM1/totalN)}/wk</strong> vs Old MESO 1.`;
+
+  /* -- KPI Cards -- */
+  document.getElementById('kpiRow').innerHTML=[
+    {l:'Net Settlement'+(viewMode==='annual'?' (52wk)':''),v:fm(totalActual),
+     sub:fm(avgActual)+'/wk avg',cls:'flat',
+     tip:`<h4>Settlement (${totalN} weeks)</h4>
+       <div class="tip-row"><span class="tip-label">Total</span><span class="tip-val">${fm(totalActual)}</span></div>
+       <div class="tip-row"><span class="tip-label">Avg/Week</span><span class="tip-val">${fm(avgActual)}</span></div>
+       ${viewMode==='annual'?'<div class="tip-row"><span class="tip-label">Est. weeks (3 wks)</span><span class="tip-val">'+fm(estActual*estWeeks)+'</span></div>':''}`},
+    {l:'vs Old MESO 1',v:fmd(diffM1),sub:(diffM1>=0?'+':'')+pctM1+'% '+(diffM1>=0?'above':'below'),cls:diffM1>=0?'up':'down',
+     tip:`<h4>Old MESO 1 (Neg Req 1000045949)</h4>
+       <div class="tip-row"><span class="tip-label">MESO 1 Total</span><span class="tip-val">${fm(totalM1)}</span></div>
+       <div class="tip-row"><span class="tip-label">Your Advantage</span><span class="tip-val">${fmd(diffM1)}</span></div>
+       <div class="tip-row"><span class="tip-label">Avg/Week</span><span class="tip-val">${fmd(diffM1/totalN)}</span></div>
+       <div class="tip-row"><span class="tip-label">Weeks Won</span><span class="tip-val">${weeksWinM1}/${n}</span></div>`},
+    {l:'Weeks Outperforming',v:weeksWinM1+'/'+n,
+     sub:Math.round(weeksWinM1/n*100)+'% of weeks',cls:'flat',
+     tip:`<h4>Weeks Outperforming Old MESO 1</h4>
+       <div class="tip-row"><span class="tip-label">vs Old MESO 1</span><span class="tip-val">${weeksWinM1}/${n} (${Math.round(weeksWinM1/n*100)}%)</span></div>`},
+    {l:'Avg Weekly Savings',v:fmd(diffM1/totalN),
+     sub:'vs Old MESO 1',cls:diffM1>=0?'up':'down',
+     tip:`<h4>Average Weekly Advantage</h4>
+       <div class="tip-row"><span class="tip-label">vs Old MESO 1</span><span class="tip-val">${fmd(diffM1/totalN)}/wk</span></div>
+       <div class="tip-row"><span class="tip-label">Total over ${totalN} wks</span><span class="tip-val">${fmd(diffM1)}</span></div>`}
+  ].map(k=>`<div class="kpi"><div class="lbl">${k.l}</div><div class="val ${k.cls||''}">${k.v}</div><div class="chg ${k.cls||'flat'}">${k.sub}</div>${k.tip?'<div class="tip">'+k.tip+'</div>':''}</div>`).join('');
+
+  /* -- Rate Comparison Table -- */
+  const rateRows=[
+    {label:'Service (weekly)',fa:fm(FA_RATES.service),m1:fm(OLD_MESO1.service),
+     best:FA_RATES.service>=OLD_MESO1.service?'fa':'m1'},
+    {label:'Stop',fa:fmr(FA_RATES.stop),m1:fmr(OLD_MESO1.stop),
+     best:FA_RATES.stop>=OLD_MESO1.stop?'fa':'m1'},
+    {label:'Fuel Surcharge',fa:fmr(FA_RATES.fuel),m1:fmr(OLD_MESO1.fuel),
+     best:FA_RATES.fuel>=OLD_MESO1.fuel?'fa':'m1',note:'Higher fuel rate benefits the CSP'},
+    {label:'Package',fa:fmr(FA_RATES.package),m1:fmr(OLD_MESO1.package),
+     best:FA_RATES.package>=OLD_MESO1.package?'fa':'m1'},
+    {label:'LP Mix',fa:fmr(FA_RATES.lp_mix),m1:fmr(OLD_MESO1.lp_mix),
+     best:FA_RATES.lp_mix>=OLD_MESO1.lp_mix?'fa':'m1'},
+    {label:'E-Com Stop',fa:fmr(FA_RATES.ecom_stop),m1:fmr(OLD_MESO1.ecom_stop),
+     best:FA_RATES.ecom_stop>=OLD_MESO1.ecom_stop?'fa':'m1'},
+    {label:'E-Com Package',fa:fmr(FA_RATES.ecom_pkg),m1:fmr(OLD_MESO1.ecom_pkg),
+     best:FA_RATES.ecom_pkg>=OLD_MESO1.ecom_pkg?'fa':'m1'},
+    {label:'Apparel (weekly)',fa:fm(FA_RATES.apparel),m1:fm(OLD_MESO1.apparel),
+     best:FA_RATES.apparel>=OLD_MESO1.apparel?'fa':'m1'},
+    {label:'Vehicle (per veh/wk)',fa:fm(FA_RATES.vehicle),m1:fm(OLD_MESO1.vehicle),
+     best:FA_RATES.vehicle>=OLD_MESO1.vehicle?'fa':'m1'},
+    {label:'Vehicles',fa:FA_RATES.vehicles,m1:OLD_MESO1.vehicles,best:''}
+  ];
+  document.getElementById('rateTable').innerHTML=`
+    <thead><tr><th style="text-align:left">Rate Component</th><th>Final Approval<br><span style="font-weight:400;font-size:10px;text-transform:none">(What was negotiated)</span></th><th>Old MESO 1<br><span style="font-weight:400;font-size:10px;text-transform:none">(Initial offer)</span></th></tr></thead>
+    <tbody>${rateRows.map(r=>`<tr><td>${r.label}</td><td class="num ${r.best==='fa'?'best-cell':''}">${r.fa}</td><td class="num ${r.best==='m1'?'best-cell':''}">${r.m1}</td></tr>`).join('')}</tbody>`;
+
+  /* -- Destroy old charts -- */
+  Object.values(charts).forEach(c=>{if(c)c.destroy()});
+  charts={};
+
+  const labels=weeks.map(w=>w.we);
+
+  /* -- Timeline Chart -- */
+  charts.timeline=new Chart(document.getElementById('cTimeline'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Actual (Final Approval)',data:weeks.map(w=>w.actual),borderColor:'#059669',backgroundColor:'rgba(5,150,105,0.1)',borderWidth:3,fill:true,tension:0.3,pointRadius:3},
+        {label:'Old MESO 1 Projected',data:weeks.map(w=>w.meso1),borderColor:'#3b82f6',borderWidth:2,borderDash:[6,3],tension:0.3,pointRadius:2}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>{
+        const v='$'+ctx.raw.toLocaleString();
+        if(ctx.datasetIndex===0){
+          const w=weeks[ctx.dataIndex];
+          const savM1=w.actual-w.meso1;
+          return ' '+ctx.dataset.label+': '+v+' ('+fmd(savM1)+' vs M1)';
+        }
+        return ' '+ctx.dataset.label+': '+v;
+      }}}},
+      scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString()},grid:{color:'#f1f5f9'}},x:{ticks:{maxRotation:45,font:{size:10}},grid:{display:false}}}
+    }
+  });
+
+  /* -- Cumulative Savings Chart -- */
+  let cumM1=0;
+  const cumData=weeks.map(w=>{
+    cumM1+=w.actual-w.meso1;
+    return{cumM1};
+  });
+  charts.cumulative=new Chart(document.getElementById('cCumulative'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'vs Old MESO 1',data:cumData.map(d=>d.cumM1),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:2,fill:true,tension:0.3}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fmd(ctx.raw)}}},
+      scales:{y:{ticks:{callback:v=>(v>=0?'+':'')+fm(v)},grid:{color:'#f1f5f9'}},x:{ticks:{maxRotation:45,font:{size:10}},grid:{display:false}}}
+    }
+  });
+
+  /* -- Total Savings Bar Chart -- */
+  charts.savingsBar=new Chart(document.getElementById('cSavingsBar'),{
+    type:'bar',
+    data:{
+      labels:['vs Old MESO 1'],
+      datasets:[{
+        label:'Total Savings',
+        data:[diffM1],
+        backgroundColor:['rgba(59,130,246,0.7)'],
+        borderRadius:8
+      }]
+    },
+    options:{
+      responsive:true,
+      indexAxis:'horizontal',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmd(ctx.raw)+(viewMode==='annual'?' (annualized)':'')}}},
+      scales:{y:{ticks:{callback:v=>(v>=0?'+':'')+fm(v)},grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}
+    }
+  });
+
+  /* -- Revenue Component Breakdown -- */
+  const compKeys=['svc','stopRev','fuelRev','pkgRev','lpRev','ecomStopRev','ecomPkgRev','apparel','vehicleRev'];
+  const compLabels=['Service','Stop','Fuel','Package','LP Mix','E-Com Stop','E-Com Pkg','Apparel','Vehicle'];
+  const compColors=['#3b82f6','#8b5cf6','#06b6d4','#f59e0b','#ef4444','#10b981','#6366f1','#ec4899','#84cc16'];
+
+  const avgComp={fa:{},m1:{}};
+  compKeys.forEach(k=>{
+    avgComp.m1[k]=weeks.reduce((s,w)=>s+w.m1_detail[k],0)/n;
+    const faWeeks=weeks.map(w=>projectWeek(w.raw,FA_RATES));
+    avgComp.fa[k]=faWeeks.reduce((s,w)=>s+w[k],0)/n;
+  });
+
+  charts.components=new Chart(document.getElementById('cComponents'),{
+    type:'bar',
+    data:{
+      labels:['Final Approval','Old MESO 1'],
+      datasets:compKeys.map((k,i)=>({
+        label:compLabels[i],
+        data:[avgComp.fa[k],avgComp.m1[k]],
+        backgroundColor:compColors[i],
+        borderRadius:2
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': $'+Math.round(ctx.raw).toLocaleString()}}},
+      scales:{y:{stacked:true,ticks:{callback:v=>'$'+v.toLocaleString()},grid:{color:'#f1f5f9'}},x:{stacked:true,grid:{display:false}}}
+    }
+  });
+
+  /* -- Per-Rate Advantage Chart -- */
+  const rateAdvData=[
+    {label:'Stop',faVal:FA_RATES.stop,m1Val:OLD_MESO1.stop},
+    {label:'Package',faVal:FA_RATES.package,m1Val:OLD_MESO1.package},
+    {label:'E-Com Stop',faVal:FA_RATES.ecom_stop,m1Val:OLD_MESO1.ecom_stop},
+    {label:'E-Com Pkg',faVal:FA_RATES.ecom_pkg,m1Val:OLD_MESO1.ecom_pkg}
+  ];
+  charts.rateAdv=new Chart(document.getElementById('cRateAdv'),{
+    type:'bar',
+    data:{
+      labels:rateAdvData.map(r=>r.label),
+      datasets:[
+        {label:'FA vs Old MESO 1',data:rateAdvData.map(r=>r.faVal-r.m1Val),backgroundColor:'rgba(59,130,246,0.7)',borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+(ctx.raw>=0?'+':'')+ctx.raw.toFixed(2)+'/unit'}}},
+      scales:{y:{ticks:{callback:v=>(v>=0?'+':'')+v.toFixed(2)},grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}
+    }
+  });
+
+  /* -- Weekly Savings vs Old MESO 1 -- */
+  const weeklySavings=weeks.map(w=>w.actual-w.meso1);
+  charts.weeklySavings=new Chart(document.getElementById('cWeeklySavings'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Savings vs Old MESO 1',
+        data:weeklySavings,
+        backgroundColor:weeklySavings.map(v=>v>=0?'rgba(5,150,105,0.7)':'rgba(220,38,38,0.7)'),
+        borderRadius:4
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmd(ctx.raw)+' vs Old MESO 1'}}},
+      scales:{y:{ticks:{callback:v=>(v>=0?'+':'')+fm(v)},grid:{color:'#f1f5f9'}},x:{ticks:{maxRotation:45,font:{size:10}},grid:{display:false}}}
+    }
+  });
+
+  /* -- Weekly Comparison Table -- */
+  document.getElementById('tableTitle').textContent='Week-by-Week Comparison'+(viewMode==='annual'?' (49 actual weeks + 3 estimated)':'');
+
+  let tBody='',totA=0,totM1t=0;
+  weeks.forEach(w=>{
+    totA+=w.actual;totM1t+=w.meso1;
+    const d1=w.actual-w.meso1;
+    tBody+=`<tr>
+      <td>${w.we}</td>
+      <td class="num highlight">${fm(w.actual)}</td>
+      <td class="num">${fm(w.meso1)}</td>
+      <td class="num ${d1>=0?'positive':'negative'}">${fmd(d1)}</td>
+    </tr>`;
+  });
+
+  // Add estimated weeks if annualized
+  if(viewMode==='annual'&&estWeeks>0){
+    for(let i=1;i<=estWeeks;i++){
+      const estDate='03/'+String(i*7).padStart(2,'0')+'/2026';
+      const d1=estActual-estM1;
+      tBody+=`<tr style="background:#f0fdf4;font-style:italic">
+        <td>${estDate} (est.)</td>
+        <td class="num highlight">${fm(estActual)}</td>
+        <td class="num">${fm(estM1)}</td>
+        <td class="num ${d1>=0?'positive':'negative'}">${fmd(d1)}</td>
+      </tr>`;
+      totA+=estActual;totM1t+=estM1;
+    }
+  }
+
+  document.getElementById('weeklyBody').innerHTML=tBody;
+  const td1=totA-totM1t;
+  document.getElementById('weeklyFoot').innerHTML=`<tr style="font-weight:700;border-top:2px solid var(--dark)">
+    <td>TOTAL${viewMode==='annual'?' (52 weeks)':' (49 weeks)'}</td>
+    <td class="num">${fm(totA)}</td>
+    <td class="num">${fm(totM1t)}</td>
+    <td class="num ${td1>=0?'positive':'negative'}">${fmd(td1)}</td>
+  </tr>`;
+}
+
+init();
+</script>
+</body>
+</html>
